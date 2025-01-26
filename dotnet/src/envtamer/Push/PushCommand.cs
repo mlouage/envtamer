@@ -15,14 +15,14 @@ public class PushCommand : Command<PushCommand.Settings>
         [CommandOption("-p|--path <PATH>")]
         [Description("Path to the env file. Defaults to '.env' in the specified or current directory.")]
         [DefaultValue(".env")]
-        public string EnvFilePath { get; set; }
+        public string? EnvFileName { get; set; }
     }
 
     public override int Execute(CommandContext context, Settings settings)
     {
         var directory = settings.DirectoryName ?? Directory.GetCurrentDirectory();
         var sanitizedDirectory = DirectorySanitizer.SanitizeDirectoryName(directory);
-        var fullPath = Path.Combine(directory, settings.EnvFilePath);
+        var fullPath = Path.Combine(directory, settings.EnvFileName!);
 
         if (!File.Exists(fullPath))
         {
