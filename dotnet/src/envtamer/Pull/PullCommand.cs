@@ -11,19 +11,19 @@ public class PullCommand : Command<PullCommand.Settings>
     {
         [CommandArgument(0, "[DIRECTORY_NAME]")]
         [Description("Name of the directory to pull the env file from.")]
-        public string DirectoryName { get; set; }
+        public required string DirectoryName { get; set; }
 
         [CommandOption("-p|--path <PATH>")]
         [Description("Path to save the env file. Defaults to '.env' in the specified or current directory.")]
         [DefaultValue(".env")]
-        public string EnvFileName { get; set; }
+        public string? EnvFileName { get; set; }
     }
 
     public override int Execute(CommandContext context, Settings settings)
     {
         var directory = settings.DirectoryName;
         var sanitizedDirectory = DirectorySanitizer.SanitizeDirectoryName(directory);
-        var envFilePath = Path.Combine(Directory.GetCurrentDirectory(), settings.EnvFileName);
+        var envFilePath = Path.Combine(Directory.GetCurrentDirectory(), settings.EnvFileName!);
 
         if (File.Exists(envFilePath))
         {
