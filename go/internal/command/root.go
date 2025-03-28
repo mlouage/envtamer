@@ -22,5 +22,10 @@ func NewRootCmd() *cobra.Command {
 		Long: fmt.Sprintf("%s\nA command-line tool for managing environment variables across different projects and directories.", logo),
 	}
 
+	cmd.AddCommand(newInitCmd())
+	cmd.AddCommand(newPushCmd())
+	cmd.AddCommand(newPullCmd())
+	cmd.AddCommand(newListCmd())
+
 	return cmd
 }
