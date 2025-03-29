@@ -73,3 +73,38 @@ func (s *Storage) Init() error {
 func (s *Storage) Close() error {
 	return s.db.Close()
 }
+
+// SaveEnvVars saves environment variables for a directory
+func (s *Storage) SaveEnvVars(directory string, envVars map[string]string) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	// Delete existing env vars for this directory
+	_, err = tx.Exec("DELETE FROM EnvVariables WHERE Directory = ?", directory)
+	if err != nil {
+		return fmt.Errorf("failed to delete existing env vars: %w", err)
+	}
+
+	// Insert new env vars
+	stmt, err := tx.Prepare("INSERT INTO EnvVariables (Directory, Key, Value) VALUES (?, ?, ?)")
+	if err != nil {
+		return fmt.Errorf("failed to prepare statement: %w", err)
+	}
+	defer stmt.Close()
+
+	for key, value := range envVars {
+		_, err = stmt.Exec(directory, key, value)
+		if err != nil {
+			return fmt.Errorf("failed to insert env var: %w", err)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}
