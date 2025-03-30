@@ -1,7 +1,8 @@
 import os
 from envtamer_db.env_variable import EnvVariable, Base
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select, distinct
 from sqlalchemy_utils import database_exists, create_database
+from sqlalchemy.orm import Session
 
 class EnvTamerDb:
 
@@ -36,4 +37,48 @@ class EnvTamerDb:
             print('🚀 Ready to push and pull env files.')
         except Exception:
             print('🛑 Init went wrong')
+            raise
+
+    def save_env_values(self, directory, variables):
+        try:
+            if self.engine is None:
+                self.ensure_db()
+            with Session(self.engine) as env_session:
+                for key in variables:
+                    stmt = select(EnvVariable).where((EnvVariable.Directory == directory) & (EnvVariable.Key == key))
+                    existing_env = env_session.scalars(stmt).one_or_none()
+                    if existing_env is None:
+                        env_var = EnvVariable(
+                            Directory=directory,
+                            Key=key,
+                            Value=variables[key]
+                        )
+                        env_session.add(env_var)
+                    else:
+                        existing_env.value = variables[key]
+                env_session.commit()
+                print (f'{len(variables)} saved successfully')
+        except Exception:
+            print('🛑 save envs went wrong')
+            raise
+
+    def save_env_value(self, directory, key, value):
+        try:
+            if self.engine is None:
+                self.ensure_db()
+            with Session(self.engine) as env_session:
+                stmt = select(EnvVariable).where(EnvVariable.Directory == directory and EnvVariable.Key == key)
+                existing_env = env_session.scalars(stmt).one()
+                if existing_env is None:
+                    env_var = EnvVariable(
+                        Directory=directory,
+                        Key=key,
+                        Value=value
+                    )
+                    env_session.add(env_var)
+                else:
+                    existing_env.value = value
+                env_session.commit()
+        except Exception:
+            print('🛑 save env went wrong:')
             raise
