@@ -11,6 +11,14 @@ dependencies = [
     "click (>=8.1.8,<9.0.0)"
 ]
 
+packages = [
+    { include = "*.py" },
+    { include = "envtamer" },
+    { include = "envtamer/*.py" }
+]
+
+[tool.poetry.scripts]
+envtamer = "envtamer.cli:cli"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
