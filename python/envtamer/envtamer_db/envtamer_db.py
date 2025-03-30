@@ -104,3 +104,42 @@ class EnvTamerDb:
         except Exception:
             print('🛑 get all envs went wrong:')
             raise
+
+    def get_all_directories(self):
+        try:
+            if self.engine is None:
+                self.ensure_db()
+            with Session(self.engine) as env_session:
+                stmt = select(distinct(EnvVariable.Directory))
+                return env_session.scalars(stmt).all()
+        except Exception:
+            print('🛑 get all directories went wrong:')
+            raise
+
+    def delete_value(self, directory, key):
+        try:
+            if self.engine is None:
+                self.ensure_db()
+            with Session(self.engine) as env_session:
+                stmt = select(EnvVariable).where(EnvVariable.Directory == directory and EnvVariable.Key == key)
+                env_var = env_session.scalars(stmt).one()
+                if env_var is not None:
+                    env_session.delete(env_var)
+                    env_session.commit()
+        except Exception:
+            print('🛑 delete env went wrong:')
+            raise
+
+    def delete_values(self, directory):
+        try:
+            if self.engine is None:
+                self.ensure_db()
+            with Session(self.engine) as env_session:
+                stmt = select(EnvVariable).where(EnvVariable.Directory == directory)
+                env_vars = env_session.scalars(stmt).all()
+                for env_var in env_vars:
+                    env_session.delete(env_var)
+                env_session.commit()
+        except Exception:
+            print('🛑 delete env went wrong:')
+            raise
