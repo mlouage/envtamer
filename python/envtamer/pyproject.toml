@@ -8,13 +8,17 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "click (>=8.1.8,<9.0.0)"
+    "click (>=8.1.8,<9.0.0)",
+    "sqlalchemy (>=2.0.40,<3.0.0)",    
+    "sqlalchemy-utils (>=0.41.2,<0.42.0)"
 ]
 
 packages = [
     { include = "*.py" },
     { include = "envtamer" },
-    { include = "envtamer/*.py" }
+    { include = "envtamer/*.py" },
+    { include = "envtamer_db" },
+    { include = "envtamer_db/*.py" },
 ]
 
 [tool.poetry.scripts]
