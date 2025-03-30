@@ -82,3 +82,25 @@ class EnvTamerDb:
         except Exception:
             print('🛑 save env went wrong:')
             raise
+
+    def get_env_value(self, directory, key):
+        try:
+            if self.engine is None:
+                self.ensure_db()
+            with Session(self.engine) as env_session:
+                stmt = select(EnvVariable).where(EnvVariable.Directory == directory and EnvVariable.Key == key)
+                return env_session.scalars(stmt).one()
+        except Exception:
+            print('🛑 get env went wrong:')
+            raise
+
+    def get_env_values(self, directory):
+        try:
+            if self.engine is None:
+                self.ensure_db()
+            with Session(self.engine) as env_session:
+                stmt = select(EnvVariable).where(EnvVariable.Directory == directory)
+                return env_session.scalars(stmt).all()
+        except Exception:
+            print('🛑 get all envs went wrong:')
+            raise
