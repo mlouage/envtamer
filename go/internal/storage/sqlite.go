@@ -108,3 +108,38 @@ func (s *Storage) SaveEnvVars(directory string, envVars map[string]string) error
 
 	return nil
 }
+
+func (s *Storage) GetEnvVars(directory string) (map[string]string, error) {
+	rows, err := s.db.Query("SELECT Key, Value FROM EnvVariables WHERE Directory = ?", directory)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query env vars: %w", err)
+	}
+	defer rows.Close()
+
+	envVars := make(map[string]string)
+	for rows.Next() {
+		var key, value string
+		if err := rows.Scan(&key, &value); err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+		envVars[key] = value
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error during rows iteration: %w", err)
+	}
+
+	if len(envVars) == 0 {
+		// Check if directory exists at all
+		var count int
+		err := s.db.QueryRow("SELECT COUNT(*) FROM EnvVariables WHERE Directory = ?", directory).Scan(&count)
+		if err != nil {
+			return nil, fmt.Errorf("failed to check directory existence: %w", err)
+		}
+		if count == 0 {
+			return nil, fmt.Errorf("directory not found: %s", directory)
+		}
+	}
+
+	return envVars, nil
+}
