@@ -143,3 +143,26 @@ func (s *Storage) GetEnvVars(directory string) (map[string]string, error) {
 
 	return envVars, nil
 }
+
+func (s *Storage) ListDirectories() ([]string, error) {
+	rows, err := s.db.Query("SELECT DISTINCT Directory FROM EnvVariables")
+	if err != nil {
+		return nil, fmt.Errorf("failed to query directories: %w", err)
+	}
+	defer rows.Close()
+
+	var directories []string
+	for rows.Next() {
+		var dir string
+		if err := rows.Scan(&dir); err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+		directories = append(directories, dir)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error during rows iteration: %w", err)
+	}
+
+	return directories, nil
+}
