@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/mlouage/envtamer-go/internal/storage"
+	"github.com/mlouage/envtamer-go/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -38,7 +39,7 @@ func newListCmd() *cobra.Command {
 				}
 			} else {
 				// List environment variables for a directory
-				dirPath, err := resolvePath(args[0])
+				dirPath, err := util.ResolvePath(args[0])
 				if err != nil {
 					return fmt.Errorf("failed to resolve directory path: %w", err)
 				}

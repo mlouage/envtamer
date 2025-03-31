@@ -1,74 +1,13 @@
 package command
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/mlouage/envtamer-go/internal/storage"
+	"github.com/mlouage/envtamer-go/internal/util"
 	"github.com/spf13/cobra"
 )
-
-func resolvePath(path string) (string, error) {
-	if path == "" {
-		dir, err := os.Getwd()
-		if err != nil {
-			return "", fmt.Errorf("failed to get current directory: %w", err)
-		}
-		return dir, nil
-	}
-
-	if filepath.IsAbs(path) {
-		return path, nil
-	}
-
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		return "", fmt.Errorf("failed to resolve absolute path: %w", err)
-	}
-
-	return absPath, nil
-}
-
-func parseEnvFile(path string) (map[string]string, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %w", err)
-	}
-	defer file.Close()
-
-	envVars := make(map[string]string)
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) != 2 {
-			continue
-		}
-
-		key := strings.TrimSpace(parts[0])
-		value := strings.TrimSpace(parts[1])
-
-		// Remove quotes if present
-		if len(value) > 1 && (value[0] == '"' || value[0] == '\'') && value[0] == value[len(value)-1] {
-			value = value[1 : len(value)-1]
-		}
-
-		envVars[key] = value
-	}
-
-	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("error reading file: %w", err)
-	}
-
-	return envVars, nil
-}
 
 func newPushCmd() *cobra.Command {
 	var filename string
@@ -83,9 +22,9 @@ func newPushCmd() *cobra.Command {
 			var dirPath string
 			var err error
 			if len(args) > 0 {
-				dirPath, err = resolvePath(args[0])
+				dirPath, err = util.ResolvePath(args[0])
 			} else {
-				dirPath, err = resolvePath("")
+				dirPath, err = util.ResolvePath("")
 			}
 			if err != nil {
 				return fmt.Errorf("failed to resolve directory path: %w", err)
@@ -93,7 +32,7 @@ func newPushCmd() *cobra.Command {
 
 			// Parse .env file
 			envFilePath := filepath.Join(dirPath, filename)
-			envVars, err := parseEnvFile(envFilePath)
+			envVars, err := util.ParseEnvFile(envFilePath)
 			if err != nil {
 				return fmt.Errorf("failed to parse env file: %w", err)
 			}

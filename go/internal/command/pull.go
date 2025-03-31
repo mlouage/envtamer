@@ -1,42 +1,15 @@
 package command
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/mlouage/envtamer-go/internal/storage"
+	"github.com/mlouage/envtamer-go/internal/util"
 	"github.com/spf13/cobra"
 )
-
-func writeEnvFile(path string, envVars map[string]string) error {
-	file, err := os.Create(path)
-	if err != nil {
-		return fmt.Errorf("failed to create file: %w", err)
-	}
-	defer file.Close()
-
-	writer := bufio.NewWriter(file)
-	for key, value := range envVars {
-		if strings.ContainsAny(value, " \t\n\r") {
-			// Quote values with whitespace
-			_, err = fmt.Fprintf(writer, "%s=\"%s\"\n", key, value)
-		} else {
-			_, err = fmt.Fprintf(writer, "%s=%s\n", key, value)
-		}
-		if err != nil {
-			return fmt.Errorf("failed to write to file: %w", err)
-		}
-	}
-
-	if err := writer.Flush(); err != nil {
-		return fmt.Errorf("failed to flush writer: %w", err)
-	}
-
-	return nil
-}
 
 func newPullCmd() *cobra.Command {
 	var filename string
@@ -48,7 +21,7 @@ func newPullCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Resolve directory path
-			dirPath, err := resolvePath(args[0])
+			dirPath, err := util.ResolvePath(args[0])
 			if err != nil {
 				return fmt.Errorf("failed to resolve directory path: %w", err)
 			}
@@ -80,7 +53,7 @@ func newPullCmd() *cobra.Command {
 				}
 			}
 
-			if err := writeEnvFile(envFilePath, envVars); err != nil {
+			if err := util.WriteEnvFile(envFilePath, envVars); err != nil {
 				return fmt.Errorf("failed to write env file: %w", err)
 			}
 
